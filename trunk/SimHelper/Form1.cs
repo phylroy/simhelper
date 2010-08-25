@@ -36,6 +36,8 @@ namespace SimHelper
                 richTextBox1.LoadFile(openFileDialog1.FileName, RichTextBoxStreamType.PlainText);
                 //Create a stack chart using beps table. 
                 CreateStackedChart(doe.bepsTable, chart1);
+                //output to excel
+                DataTableWriter.test(doe);
 
             }
         }

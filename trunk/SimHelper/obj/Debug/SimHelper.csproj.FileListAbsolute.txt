@@ -49,3 +49,17 @@ K:\SimHelper\SimHelper\obj\Debug\SimHelper.UserControl1.resources
 K:\SimHelper\SimHelper\obj\Debug\SimHelper.csproj.GenerateResource.Cache
 K:\SimHelper\SimHelper\obj\Debug\SimHelper.exe.manifest
 K:\SimHelper\SimHelper\obj\Debug\SimHelper.application
+C:\simhelper\SimHelper\obj\Debug\SimHelper.exe
+C:\simhelper\SimHelper\obj\Debug\SimHelper.pdb
+C:\simhelper\SimHelper\bin\Debug\SimHelper.exe.manifest
+C:\simhelper\SimHelper\bin\Debug\SimHelper.application
+C:\simhelper\SimHelper\bin\Debug\SimHelper.exe
+C:\simhelper\SimHelper\bin\Debug\SimHelper.pdb
+C:\simhelper\SimHelper\obj\Debug\ResolveAssemblyReference.cache
+C:\simhelper\SimHelper\obj\Debug\SimHelper.Form1.resources
+C:\simhelper\SimHelper\obj\Debug\SimHelper.Properties.Resources.resources
+C:\simhelper\SimHelper\obj\Debug\SimHelper.UserControl1.resources
+C:\simhelper\SimHelper\obj\Debug\SimHelper.csproj.GenerateResource.Cache
+C:\simhelper\SimHelper\obj\Debug\SimHelper.exe.manifest
+C:\simhelper\SimHelper\obj\Debug\SimHelper.application
+C:\simhelper\SimHelper\obj\Debug\SimHelper.csproj.ResolveComReference.cache
