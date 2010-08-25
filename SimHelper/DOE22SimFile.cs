@@ -274,6 +274,7 @@ namespace SimHelper
                     bepsTable.Rows.Add(row);
                 }
                 bepsTable.AcceptChanges();
+                
             }
         }
 
