@@ -39,3 +39,5 @@ C:\simhelper\SimHelper\obj\Release\SimHelper.application
 C:\simhelper\SimHelper\obj\Release\SimHelper.exe
 C:\simhelper\SimHelper\obj\Release\SimHelper.pdb
 C:\simhelper\SimHelper\obj\Release\SimHelper.csproj.ResolveComReference.cache
+C:\simhelper\SimHelper\bin\Release\DOE22.dll
+C:\simhelper\SimHelper\bin\Release\DOE22.pdb
