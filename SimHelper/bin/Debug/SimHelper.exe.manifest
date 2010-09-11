@@ -72,14 +72,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SimHelper.exe" size="30208">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SimHelper.exe" size="34304">
       <assemblyIdentity name="SimHelper" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>Y8rQ3iPfWnIxibUgDnaApyI0dE8=</dsig:DigestValue>
+        <dsig:DigestValue>wW8jTmY/L7Zg5jvdvFUKKvfLkBk=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
