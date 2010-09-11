@@ -63,3 +63,5 @@ C:\simhelper\SimHelper\obj\Debug\SimHelper.csproj.GenerateResource.Cache
 C:\simhelper\SimHelper\obj\Debug\SimHelper.exe.manifest
 C:\simhelper\SimHelper\obj\Debug\SimHelper.application
 C:\simhelper\SimHelper\obj\Debug\SimHelper.csproj.ResolveComReference.cache
+C:\simhelper\SimHelper\bin\Debug\DOE22.dll
+C:\simhelper\SimHelper\bin\Debug\DOE22.pdb

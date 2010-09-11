@@ -7,7 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using System.IO; 
+using System.IO;
+using DOE22; 
 namespace SimHelper
 {
     public partial class Form1 : Form
@@ -37,7 +38,7 @@ namespace SimHelper
                 //Create a stack chart using beps table. 
                 CreateStackedChart(doe.bepsTable, chart1);
                 //output to excel
-                DataTableWriter.test(doe);
+                //DataTableWriter.test(doe);
 
             }
         }

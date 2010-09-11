@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C# Express 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimHelper", "SimHelper\SimHelper.csproj", "{D577177C-531A-434F-BF55-3B554B8CE266}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DOE22", "DOE22\DOE22.csproj", "{AC3EC484-9243-4FAA-BCE5-621FE290F79B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{D577177C-531A-434F-BF55-3B554B8CE266}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D577177C-531A-434F-BF55-3B554B8CE266}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D577177C-531A-434F-BF55-3B554B8CE266}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC3EC484-9243-4FAA-BCE5-621FE290F79B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC3EC484-9243-4FAA-BCE5-621FE290F79B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC3EC484-9243-4FAA-BCE5-621FE290F79B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC3EC484-9243-4FAA-BCE5-621FE290F79B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
