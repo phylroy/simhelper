@@ -13,57 +13,40 @@ namespace SimHelper
         //Members.
         //location of file path. 
         public string filepath;
-
-
-        public DataTable BuildingAnnualTable;
-        public DataTable BuildingMonthlyTable;
-        public DataTable BuildingHourlyTable;
-
-
-        public DataTable PlantAnnualTable;
-        public DataTable[] PlantMonthlyTables;
-        public DataTable[] PlantHourlyTables;
-
         public DataTable SystemAnnualTable;
-        public DataTable[] SystemMonthlyTables;
-        public DataTable[] SystemHourlyTables;
-
         public DataTable ZoneAnnualTable;
-        public DataTable[] ZoneMonthlyTables;
-        public DataTable[] ZoneHourlyTables;
-
-        public DataTable SpaceAnnualTable;
-        public DataTable[] SpaceMonthlyTables;
-        public DataTable[] SpaceHourlyTables;
-
-
 
         //BEPS table and header list vars.
         public DataTable bepsTable;
-        public List<string> bepsHeaderList;
+        private List<string> bepsHeaderList;
+
+        //ES-D table and header list vars.
+        public DataTable esdTable;
+        private List<string> esdHeaderList;
 
         //Zone table for Annual or static data. 
         //public DataTable ZoneAnnualTable;
 
-
-
         //SV-A Header lists. 
-        public List<string> zoneSVAHeaderList;
-        public List<string> systemSVAHeaderList1;
-        public List<string> systemSVAHeaderList2;
+        private List<string> zoneSVAHeaderList;
+        private List<string> systemSVAHeaderList1;
+        private List<string> systemSVAHeaderList2;
         //SS-R Header lists. 
-        public List<string> zoneSSRHeaderList;
+        private List<string> zoneSSRHeaderList;
 
-        public void scanSimFile()
+
+
+        private void scanSimFile()
         {
+
             //clear all tables. 
             Initialize();
             string[] lineArray = File.ReadAllLines(filepath);
             for (int linecounter = 0; linecounter < lineArray.Count(); linecounter++)
             {
-                string line = lineArray[linecounter];
-                getBEPS(lineArray, linecounter);
 
+                getBEPS(lineArray, linecounter);
+                getESD(lineArray, linecounter);
                 getSSR(lineArray, linecounter);
             }
 
@@ -87,9 +70,18 @@ namespace SimHelper
 
         }
 
-        //Constructor.
-        public void Initialize()
+        public DOE22SimFile(string filepath)
         {
+            Initialize();
+            scanSimFile(filepath);
+
+        }
+
+
+
+        private void Initialize()
+        {
+
             bepsTable = new DataTable("bepsTable");
             bepsTable.Columns.Add("METER", typeof(string));
             bepsTable.Columns["METER"].Unique = true;
@@ -111,6 +103,23 @@ namespace SimHelper
                 "System.Double","EXT-USAGE",
                 "System.Double","TOTAL"
             });
+
+            esdTable = new DataTable("esdTable");
+            esdTable.Columns.Add("UTILITY-RATE", typeof(string));
+            esdTable.Columns["UTILITY-RATE"].Unique = true;
+            esdTable.PrimaryKey = new DataColumn[] { esdTable.Columns["UTILITY-RATE"] };
+            esdHeaderList = ParserTools.addColumns(ref esdTable, new string[]{
+                "System.String","UTILITY-RATE",
+                "System.String","RESOURCE",
+                "System.String","METERS",
+                "System.Double","METERED-ENERGY UNITS/YR",
+                "System.String","UNIT",
+                "System.Double","TOTAL CHARGE ($)",
+                "System.Double","VIRTUAL RATE ($/UNIT)",
+                "System.String","RATE USED ALL YEAR"
+            });
+
+
 
             SystemAnnualTable = new DataTable("systemTable");
             SystemAnnualTable.Columns.Add("SYSTEM-NAME", typeof(string));
@@ -212,20 +221,16 @@ namespace SimHelper
                 "System.Double", "NUM-HOURS PLR Total"
         });
         }
-        public void setFilePath(string inpfilepath)
-        {
-            this.filepath = inpfilepath;
-        }
 
         //method stores the beps energy for the run. 
-        public void getBEPS(string[] lineArray, int linecounter)
+        private void getBEPS(string[] lineArray, int linecounter)
         {
-            string line = lineArray[linecounter];
 
             //Search for BEPS report.
-            string pattern = @"(\s*REPORT- BEPS Building Energy Performance.*$)";
-            Regex beps_flag = new Regex(pattern, RegexOptions.IgnoreCase);
-            if (beps_flag.IsMatch(line))
+
+
+            //not using regex here..it is too slow. 
+            if (lineArray[linecounter].IndexOf("REPORT- BEPS Building Energy Performance") >= 0)
             {
                 //find last line of BEPS Energy table. 
                 int lastline = linecounter;
@@ -234,7 +239,7 @@ namespace SimHelper
                     lastline += 1;
                 }
 
-                //Start reading in BEPS energy, six lines from start of beps.
+                //Start reading in BEPS energy, eight lines from start of beps.
                 int sublinecounter = linecounter + 7;
                 while (sublinecounter < lastline)
                 {
@@ -274,218 +279,259 @@ namespace SimHelper
                     bepsTable.Rows.Add(row);
                 }
                 bepsTable.AcceptChanges();
-                
+
             }
         }
 
-        //method stores the beps energy for the run. 
-        public void getSVA(string[] lineArray, int linecounter)
+        //method stores the esd energy for the run. 
+        private void getESD(string[] lineArray, int linecounter)
         {
             string line = lineArray[linecounter];
-
-            //Search for SV-A
-            string pattern = @"^\s*REPORT- SV-A System Design Parameters for(.{51})WEATHER FILE.*$";
-            Regex sva_flag = new Regex(pattern, RegexOptions.IgnoreCase);
-            if (sva_flag.IsMatch(line))
+            //Search for esd report.
+            if (lineArray[linecounter].IndexOf("REPORT- ES-D Energy Cost Summary") >= 0)
             {
-                //Zone 
-                DataRow row;
-                MatchCollection matches = sva_flag.Matches(line);
-                string system_name = matches[0].Groups[1].Value.ToString().Trim();
-
-                //Start reading in System data, six lines from start of beps.
-                int sublinecounter = linecounter + 6;
-                string line1 = lineArray[sublinecounter];
-
-                List<string> values = ParserTools.getStringMatches(@"\s*(.{8})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})\s*$", lineArray[sublinecounter]);
-                values.Insert(0, system_name);
-                if (SystemAnnualTable.Rows.Find(values[0]) == null)
-                {
-                    row = SystemAnnualTable.NewRow();
-                    row["SYSTEM-NAME"] = values[0];
-                    values.RemoveAt(0);
-                    SystemAnnualTable.Rows.Add(row);
-                }
-                else
-                {
-                    row = SystemAnnualTable.Rows.Find(values[0]);
-                    values.RemoveAt(0);
-                }
-
-                int counter = 0;
-                foreach (string value in values)
-                {
-                    row[systemSVAHeaderList1[counter]] = value;
-                    counter += 1;
-                }
-                int iNotSumLine = 0;
-                if (values[0] != "SUM")
-                {
-
-                    //Start reading in System data line 2.
-                    sublinecounter = linecounter + 13;
-                    line1 = lineArray[sublinecounter];
-                    List<string> values2 = ParserTools.getStringMatches(@"\s*(.{8})(.{11})(.{11})(.{9})(.{10})(.{11})(.{8})(.{8})(.{12})(.{10})(.{10})(.{10})\s*$", lineArray[sublinecounter]);
-                    int counter2 = 0;
-                    foreach (string value in values2)
-                    {
-                        row[systemSVAHeaderList2[counter2]] = value;
-                        counter2 += 1;
-                    }
-                    iNotSumLine = 4;
-                }
-
-                SystemAnnualTable.AcceptChanges();
-
-
-                //Start reading in Zone data.
-                sublinecounter = linecounter + 16 + iNotSumLine;
-
-                Regex end_flag = new Regex(@".*DOE-.*\d+/\d+/\d+.*BDL RUN.*$", RegexOptions.IgnoreCase);
-                Regex baseboard = new Regex(@"\s*(.*)\(BASEBOARDS\)$", RegexOptions.IgnoreCase);
-                while (!end_flag.IsMatch(lineArray[sublinecounter]))
-                {
-                    int skip = 0;
-                    if (lineArray[sublinecounter] != "")
-                    {
-
-                        DataRow zone_row;
-                        line1 = lineArray[sublinecounter];
-                        List<string> values3 = ParserTools.getStringMatches(@"(.{26})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{5})$", lineArray[sublinecounter]);
-                        if (baseboard.IsMatch(lineArray[sublinecounter + 1]))
-                        {
-                            List<string> baseboardVal = ParserTools.getStringMatches(@"\s*(.*)\(BASEBOARDS\)$", lineArray[sublinecounter + 1]);
-                            values3.Add(baseboardVal[0]);
-                            skip = 1;
-                        }
-                        else
-                        {
-                            values3.Add("0.0");
-                            skip = 0;
-                        }
-
-                        row = null;
-                        for (int i = 0; i < ZoneAnnualTable.Rows.Count; i++)
-                        {
-                            DataRow testrow = ZoneAnnualTable.Rows[i];
-                            string Zonename = testrow["ZONE-NAME"].ToString();
-
-                            if (Zonename == values3[0]
-                                || (Zonename.Length >= 25 && Zonename.Substring(0, 25) == values3[0]))
-                            {
-                                row = testrow;
-                            }
-                        }
-
-                        if (row == null)
-                        {
-                            row = ZoneAnnualTable.NewRow();
-                            row["ZONE-NAME"] = values3[0];
-
-                            ZoneAnnualTable.Rows.Add(row);
-
-                        }
-
-
-
-                            values3.RemoveAt(0);
-
-
-                        ////
-
-
-
-                        if (values3.Count == 12)
-                        {
-                            int counter3 = 0;
-                            foreach (string value in values3)
-                            {
-                                row[zoneSVAHeaderList[counter3]] = value;
-                                counter3 += 1;
-                            }
-
-
-                            ZoneAnnualTable.AcceptChanges();
-
-                        }
-                    }
-                    sublinecounter += (1 + skip);
-                }
-
-
-            }
-
-        }
-
-        //method stores the beps energy for the run. 
-        public void getSSR(string[] lineArray, int linecounter)
-        {
-            string line = lineArray[linecounter];
-
-            //Search for BEPS report.
-            string pattern = @"(\s*REPORT- SS-R Zone Performance.*$)";
-            Regex ssr_flag = new Regex(pattern, RegexOptions.IgnoreCase);
-            if (ssr_flag.IsMatch(line))
-            {
-                //find last line of BEPS Energy table. 
+                //find last line of esd Energy table. 
                 int lastline = linecounter;
-                while (lineArray[lastline] != "                  -------- -------- -------- --------")
+                while (lineArray[lastline] != "                                                                                          ==========")
                 {
                     lastline += 1;
                 }
-
-                //Start reading in BEPS energy, nine lines from start of beps.
-                int sublinecounter = linecounter + 9;
-                while (sublinecounter + 2 < lastline)
+                //Start reading in esd energy, six lines from start of esd.
+                int sublinecounter = linecounter + 8;
+                while (sublinecounter < lastline)
                 {
-
                     //get fuel meter name
                     string[] regexList = 
+                        {  
+                            "0",@"(.{35})(.{19})(.{11})(.{13})(.{12})(.{10})(.{13})(.{9})"
+                        };
+                    List<string> values = ParserTools.GetRowsDataToList(lineArray, sublinecounter, regexList);
+                    sublinecounter += 2;
+                    DataRow row;
+                    DataTable tabletest = esdTable;
+                    string valuetest = values[0];
+                    //Check to see if a row does not exist..if not create a new row.
+                    if (tabletest.Rows.Find(values[0]) == null)
+                    {
+                        row = tabletest.NewRow();
+                        row["UTILITY-RATE"] = values[0];
+                        values.RemoveAt(0);
+                    }
+                    else
+                    {
+                        //otherwise find the existing row and use it. 
+                        row = tabletest.Rows.Find(values[0]);
+                        values.RemoveAt(0);
+                    }
+                    for (int iCounter = 0; iCounter < values.Count(); iCounter++)
+                    {
+                        row[esdHeaderList[iCounter]] = values[iCounter];
+                    }
+                    esdTable.Rows.Add(row);
+                }
+                esdTable.AcceptChanges();
+            }
+        }
+
+        //method stores the beps energy for the run. 
+        private void getSVA(string[] lineArray, int linecounter)
+        {
+            
+
+            //Search for SV-A
+            if (lineArray[linecounter].IndexOf("REPORT- SV-A System Design Parameters for") >= 0)
+            {
+
+                Regex sva_flag = new Regex(@"^\s*REPORT- SV-A System Design Parameters for(.{51})WEATHER FILE.*$", RegexOptions.IgnoreCase);
+                if (sva_flag.IsMatch(lineArray[linecounter]))
+                {
+                    //Zone 
+                    DataRow row;
+                    MatchCollection matches = sva_flag.Matches(lineArray[linecounter]);
+                    string system_name = matches[0].Groups[1].Value.ToString().Trim();
+
+                    //Start reading in System data, six lines from start of beps.
+                    int sublinecounter = linecounter + 6;
+                    string line1 = lineArray[sublinecounter];
+
+                    List<string> values = ParserTools.getStringMatches(@"\s*(.{8})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})(.{11})\s*$", lineArray[sublinecounter]);
+                    values.Insert(0, system_name);
+                    if (SystemAnnualTable.Rows.Find(values[0]) == null)
+                    {
+                        row = SystemAnnualTable.NewRow();
+                        row["SYSTEM-NAME"] = values[0];
+                        values.RemoveAt(0);
+                        SystemAnnualTable.Rows.Add(row);
+                    }
+                    else
+                    {
+                        row = SystemAnnualTable.Rows.Find(values[0]);
+                        values.RemoveAt(0);
+                    }
+
+                    int counter = 0;
+                    foreach (string value in values)
+                    {
+                        row[systemSVAHeaderList1[counter]] = value;
+                        counter += 1;
+                    }
+                    int iNotSumLine = 0;
+                    if (values[0] != "SUM")
+                    {
+
+                        //Start reading in System data line 2.
+                        sublinecounter = linecounter + 13;
+                        line1 = lineArray[sublinecounter];
+                        List<string> values2 = ParserTools.getStringMatches(@"\s*(.{8})(.{11})(.{11})(.{9})(.{10})(.{11})(.{8})(.{8})(.{12})(.{10})(.{10})(.{10})\s*$", lineArray[sublinecounter]);
+                        int counter2 = 0;
+                        foreach (string value in values2)
+                        {
+                            row[systemSVAHeaderList2[counter2]] = value;
+                            counter2 += 1;
+                        }
+                        iNotSumLine = 4;
+                    }
+
+                    SystemAnnualTable.AcceptChanges();
+
+
+                    //Start reading in Zone data.
+                    sublinecounter = linecounter + 16 + iNotSumLine;
+
+                    Regex end_flag = new Regex(@".*DOE-.*\d+/\d+/\d+.*BDL RUN.*$", RegexOptions.IgnoreCase);
+                    Regex baseboard = new Regex(@"\s*(.*)\(BASEBOARDS\)$", RegexOptions.IgnoreCase);
+                    while (!end_flag.IsMatch(lineArray[sublinecounter]))
+                    {
+                        int skip = 0;
+                        if (lineArray[sublinecounter] != "")
+                        {
+
+
+                            line1 = lineArray[sublinecounter];
+                            List<string> values3 = ParserTools.getStringMatches(@"(.{26})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{10})(.{5})$", lineArray[sublinecounter]);
+                            if (baseboard.IsMatch(lineArray[sublinecounter + 1]))
+                            {
+                                List<string> baseboardVal = ParserTools.getStringMatches(@"\s*(.*)\(BASEBOARDS\)$", lineArray[sublinecounter + 1]);
+                                values3.Add(baseboardVal[0]);
+                                skip = 1;
+                            }
+                            else
+                            {
+                                values3.Add("0.0");
+                                skip = 0;
+                            }
+
+                            row = null;
+                            for (int i = 0; i < ZoneAnnualTable.Rows.Count; i++)
+                            {
+                                DataRow testrow = ZoneAnnualTable.Rows[i];
+                                string Zonename = testrow["ZONE-NAME"].ToString();
+
+                                if (Zonename == values3[0]
+                                    || (Zonename.Length >= 25 && Zonename.Substring(0, 25) == values3[0]))
+                                {
+                                    row = testrow;
+                                }
+                            }
+
+                            if (row == null)
+                            {
+                                row = ZoneAnnualTable.NewRow();
+                                row["ZONE-NAME"] = values3[0];
+                                ZoneAnnualTable.Rows.Add(row);
+                            }
+                            values3.RemoveAt(0);
+                            if (values3.Count == 12)
+                            {
+                                int counter3 = 0;
+                                foreach (string value in values3)
+                                {
+                                    row[zoneSVAHeaderList[counter3]] = value;
+                                    counter3 += 1;
+                                }
+                                ZoneAnnualTable.AcceptChanges();
+                            }
+                        }
+                        sublinecounter += (1 + skip);
+                    }
+                }
+            }
+        }
+        //method stores the beps energy for the run. 
+        private void getSSR(string[] lineArray, int linecounter)
+        {
+
+            //Search for SV-A
+            if (lineArray[linecounter].IndexOf("REPORT- SS-R Zone Performance") >= 0)
+            {
+
+                string line = lineArray[linecounter];
+
+                //Search for BESS-R report.
+                string pattern = @"(\s*REPORT- SS-R Zone Performance.*$)";
+                Regex ssr_flag = new Regex(pattern, RegexOptions.IgnoreCase);
+                if (ssr_flag.IsMatch(line))
+                {
+                    //find last line of BEPS Energy table. 
+                    int lastline = linecounter;
+                    while (lineArray[lastline] != "                  -------- -------- -------- --------")
+                    {
+                        lastline += 1;
+                    }
+
+                    //Start reading in BEPS energy, nine lines from start of beps.
+                    int sublinecounter = linecounter + 9;
+                    while (sublinecounter + 2 < lastline)
+                    {
+
+                        //get fuel meter name
+                        string[] regexList = 
                         {  
                             "0",@"^(.*)$",
                             "1",@"^(.{26})(.{9})(.{9})(.{9})(.{10})(.{6})(.{6})(.{6})(.{6})(.{6})(.{6})(.{6})(.{6})(.{6})(.{6})(.{6})$"
                         };
 
-                    List<string> values = ParserTools.GetRowsDataToList(lineArray, sublinecounter, regexList);
-                    sublinecounter += 2;
-                    DataRow row;
-                    DataRow foundrow = null;
-                    DataTable tabletest = ZoneAnnualTable;
-                    string valuetest = values[0];
+                        List<string> values = ParserTools.GetRowsDataToList(lineArray, sublinecounter, regexList);
+                        sublinecounter += 2;
+                        DataRow row;
+                        DataRow foundrow = null;
+                        DataTable tabletest = ZoneAnnualTable;
+                        string valuetest = values[0];
 
-                    for (int i = 0; i < ZoneAnnualTable.Rows.Count; i++)
-                    {
-                        DataRow testrow = ZoneAnnualTable.Rows[i];
-                        string Zonename = testrow["ZONE-NAME"].ToString();
-
-                        if (Zonename == values[0] || (Zonename.Length == 25 && Zonename.Substring(0, 25) == values[0]))
+                        for (int i = 0; i < ZoneAnnualTable.Rows.Count; i++)
                         {
-                        foundrow = testrow;
+                            DataRow testrow = ZoneAnnualTable.Rows[i];
+                            string Zonename = testrow["ZONE-NAME"].ToString();
+
+                            if (Zonename == values[0] || (Zonename.Length == 25 && Zonename.Substring(0, 25) == values[0]))
+                            {
+                                foundrow = testrow;
+                            }
                         }
-                    }
-                    if (foundrow == null)
-                    {
-                        row = ZoneAnnualTable.NewRow();
-                        row["ZONE-NAME"] = values[0];
-                        values.RemoveAt(0);
-                        ZoneAnnualTable.Rows.Add(row);
-                    
-                    }
-                    else
-                    {
-                        row = foundrow;
-                        row = ZoneAnnualTable.Rows.Find(values[0]);
-                        values.RemoveAt(0);
-                    }
+                        if (foundrow == null)
+                        {
+                            row = ZoneAnnualTable.NewRow();
+                            row["ZONE-NAME"] = values[0];
+                            values.RemoveAt(0);
+                            ZoneAnnualTable.Rows.Add(row);
+
+                        }
+                        else
+                        {
+                            row = foundrow;
+                            row = ZoneAnnualTable.Rows.Find(values[0]);
+                            values.RemoveAt(0);
+                        }
 
 
-                    for (int iCounter = 0; iCounter < values.Count(); iCounter++)
-                    {
-                        row[zoneSSRHeaderList[iCounter]] = values[iCounter];
+                        for (int iCounter = 0; iCounter < values.Count(); iCounter++)
+                        {
+                            row[zoneSSRHeaderList[iCounter]] = values[iCounter];
+                        }
+                        //zoneTable.Rows.Add(row);
                     }
-                    //zoneTable.Rows.Add(row);
+                    ZoneAnnualTable.AcceptChanges();
                 }
-                ZoneAnnualTable.AcceptChanges();
             }
         }
     }
