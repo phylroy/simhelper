@@ -6,4 +6,4 @@ This is a project I started in early 2008. It was a methodology of examining the
 
 Due to the feature rich side of the DOE22 classes, I have decided to make these a library class that is usable in other applications and make them available for everyone to use. 
 
-
+I intend to add E+ support as well in the future. If you are interesting in my E+ development please my energy plus project page. 
