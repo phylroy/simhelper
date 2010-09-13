@@ -41,7 +41,7 @@ namespace SimHelper
             if (result == DialogResult.OK) // Test result.
             {
                 //Read in Sim file. 
-                doe.scanSimFile(openFileDialog1.FileName);
+                doe = new DOE22SimFile(openFileDialog1.FileName);
                 //Assign Datatables to grids. 
                 dataGridView2.DataSource = doe.ZoneAnnualTable;
                 dataGridView1.DataSource = doe.SystemAnnualTable;
