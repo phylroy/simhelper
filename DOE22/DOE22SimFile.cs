@@ -72,7 +72,7 @@ namespace DOE22
             }
         }
 
-        public void scanSimFile(string filepath)
+        private void scanSimFile(string filepath)
         {
             this.filepath = filepath;
             scanSimFile();
@@ -93,7 +93,7 @@ namespace DOE22
 
 
 
-        public void Initialize()
+        private void Initialize()
         {
 
             bepsTable = new DataTable("bepsTable");
@@ -237,7 +237,7 @@ namespace DOE22
         }
 
         //method stores the beps energy for the run. 
-        public void getBEPS(string[] lineArray, int linecounter)
+        private void getBEPS(string[] lineArray, int linecounter)
         {
 
             //Search for BEPS report.
@@ -298,7 +298,7 @@ namespace DOE22
         }
 
         //method stores the esd energy for the run. 
-        public void getESD(string[] lineArray, int linecounter)
+        private void getESD(string[] lineArray, int linecounter)
         {
             string line = lineArray[linecounter];
             //Search for esd report.
@@ -348,7 +348,7 @@ namespace DOE22
         }
 
         //method stores the beps energy for the run. 
-        public void getSVA(string[] lineArray, int linecounter)
+        private void getSVA(string[] lineArray, int linecounter)
         {
             
 
@@ -472,7 +472,7 @@ namespace DOE22
             }
         }
         //method stores the beps energy for the run. 
-        public void getSSR(string[] lineArray, int linecounter)
+        private void getSSR(string[] lineArray, int linecounter)
         {
 
             //Search for SV-A
